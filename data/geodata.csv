@@ -1,3 +1,4 @@
-geoid,population,include_in_report
-10001,1000,TRUE
-20002,2000,FALSE
+"geoid","USPS","pop2010"
+"10001","DE",162310
+"10005","DE",197145
+"10003","DE",538479
