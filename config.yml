@@ -1,33 +1,25 @@
-## This config file will not generate a makefile as currently configured.
-## We want to show all of the options available, even though some are not appropriately general for this scope
-## In particular, importation and the associated FolderDraw seeding method only work for sets of US states.
-## The comments in this file explain how to modify it based on your use case
-## Items that must be changed for the process to work are designated by < >.
-## Some items in the config can be removed, and we have tried to note these with comments as well.
-
 name: delaware_test
-start_date: 2020-01-31
-end_date: 2020-06-18
+start_date: 2020-1-31
+end_date: 2020-08-20
 nsimulations: 15
 dt: 0.25
-## dynfilter_path: data/filter.txt ## this method of filtering is not currently working
+dynfilter_path: data/filter.txt 
 
 spatial_setup:
-  census_year: 2010
+  census_year: 2016
   base_path: data
-  modeled_states: # To model a region that is not a state, remove modeled_states and the importation: block
-   - DE # e.g., MD  You can provide as many of these as you like, but more counties means slower runs
-  setup_name: minimal
+  modeled_states: 
+   - DE
+   - PA
+  setup_name: delaware_test
   geodata: geodata.csv
   mobility: mobility.txt
   popnodes: pop2010
   nodenames: geoid
-  include_in_report: include_in_report
-  shapefile: shp/counties_2010_DE.shp # We haven't created fake shapefiles yet.  Stay tuned.
-  shapefile_name: shp/counties_2010_DE.shp # This should be the same as above.  We are working to merge the two
+  shapefile_name: shp/counties_2010_DE.shp
 
-importation: ## You can seed the SEIR model directly instead of using importation.  To do so, comment out this block
-  census_api_key: bd85e9e9a61c15b2d2d9b4d5599987880b82d139 # For use with the tidycensus package
+importation: 
+  census_api_key: bd85e9e9a61c15b2d2d9b4d5599987880b82d139
   travel_dispersion: 3
   maximum_destinations: Inf
   dest_type : state
@@ -36,7 +28,7 @@ importation: ## You can seed the SEIR model directly instead of using importatio
   cache_work: TRUE
   update_case_data: TRUE
   draw_travel_from_distribution: FALSE
-  print_progress: FALSE
+  print_progress: TRUE
   travelers_threshold: 10000
   airport_cluster_distance: 80
   param_list:
@@ -50,14 +42,10 @@ importation: ## You can seed the SEIR model directly instead of using importatio
     shift_incid_days: -10
     delta: 1
 
-seeding: ## If removing the importation, comment out this seeding block
+seeding:
   method: FolderDraw
-  folder_path: importation/minimal/
-
-# seeding: ## If removing importation, uncomment this seeding block
-#   method: PoissonDistributed
-#   lambda_file: data/minimal/seeding.csv
-
+  folder_path: importation/delaware_test/
+  
 seir:
   parameters:
     sigma: 1 / 5.2
@@ -74,6 +62,7 @@ interventions:
   scenarios:
     - None
     - Scenario1
+    - Scenario2
   settings:
     None:
       template: ReduceR0
@@ -123,10 +112,6 @@ hospitalization:
     p_ICU: 0.32
     p_vent: 0.15
 
-## Report generation is still in it's infancy.
-## The parameters in this block are only used in our draft state_report rmarkdown template 
-## This section can be removed if you are not using that template.
-## Many of the parameters in this section may be broken, as that report has been under a lot of development recently.
 report:
   data_settings:
     pop_year: 2010
@@ -187,4 +172,4 @@ report:
     - Lockdown followed by Moderate Social Distancing
     scenario_colors: ["#D95F02", "#1B9E77", "#7570B3"]
     pdeath_labels: ["0.25% IFR", "0.5% IFR", "1% IFR"]
-    display_dates: ["2020-05-01", "2020-07-01", "2020-09-01"]
+    display_dates: ["2020-05-01", "2020-06-01", "2020-07-01"]
