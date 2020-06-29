@@ -19,7 +19,7 @@ spatial_setup:
   shapefile_name: shp/counties_2010_DE.shp
 
 importation: 
-  census_api_key: bd85e9e9a61c15b2d2d9b4d5599987880b82d139
+  census_api_key: <Insert your API key here>
   travel_dispersion: 3
   maximum_destinations: Inf
   dest_type : state
