@@ -5,7 +5,7 @@ output:
   html_document:
     df_print: paged
     fig_caption: true
-    theme: flatly
+    theme: cerulean
 bibliography: ReportReferences.bib
 params:
   continue_on_error: TRUE
@@ -94,17 +94,12 @@ modeled_states <- state.name[which(state.abb %in% config$spatial_setup$modeled_s
 
 We compared `r nscenarios` intervention scenarios for model simulations from `r print_pretty_date(sim_start_date)` through `r print_pretty_date(sim_end_date)`:
 
-[CHANGE BELOW DETAILS ABOUT INTERVENTIONS]
-
 1. *Lockdown followed by Worst-Case Uncontrolled Spread:* This scenario has statewide school closures from March 13-19 followed by a statewide stay-at-home policy from March 19 through May 14. All interventions are then removed (back to worst-case uncontrolled transmission) starting May 15.
 
 1. *Lockdown followed by Test and Isolate:* This scenario has statewide school closures from March 13-19 followed by a statewide stay-at-home policy from March 19 through May 14. From May 15 through December 31, there is a targeted test and isolate strategy similar to that implemented in South Korea.
 
 1. *Lockdown followed by Moderate Social Distancing:* This scenario has statewide school closures from March 13-19 followed by a statewide stay-at-home policy from March 19 through May 14. From May 15 through December 31, there is moderately restrictive social distancing similar to that in US cities during the 1918 influenza pandemic.
 
-[MAYBE WE SHOULD THEN ADD SOME SUMMARY STATEMENTS ABOUT OUR FINDINGS?]
-
-[ALTER BELOW DESCRIPTIVE STRING FOR SCENARIO CAPTIONS]
 
 ```{r rmd_formatting}
 scen_desc_str <- "three scenarios with 8-week lockdown followed by 1) worst-case uncontrolled spread, 2) targeted testing and isolation, and 3) moderately restrictive social distancing"
@@ -138,14 +133,17 @@ registerDoSEQ()
 plot_ts_hosp_state_sample(state_hosp_totals,
                           varname = "NhospCurr",
                           varlabel = "Daily hospital occupancy",
+                          num_sims = 1,
                           scenario_labels = config$report$formatting$scenario_labels,
                           scenario_cols = config$report$formatting$scenario_colors,
                           sim_start_date = config$start_date,
                           sim_end_date = config$end_date,
                           pdeath_level = 0.01)
 
-cap <- paste0("**Fig. ", fig_counter, "**: Daily hospital occupancy for 15 simulation realizations for ", scen_desc_str, "at 1 % IFR assumptions.")
+cap <- paste0("**Fig. ", fig_counter, "**: Daily state-level hospital occupancy for 1 simulation realizations for ", scen_desc_str, "at 1 % IFR assumptions.")
+fig_counter <- fig_counter + 1
 ```
+
 
 ```{r load_cum_inf_geounit_dates}
 ###Load cumulative infections on specific dates
@@ -261,7 +259,7 @@ deaths_period <- boxplot_by_timeperiod(state_hosp_totals %>%
 ##Boxplot of infections in period
 infections_period <- boxplot_by_timeperiod(state_hosp_totals %>% 
                                     select(time, sim_num, scenario_name,
-                                           NindicInf)%>%rename(N=NincidInf),
+                                           NincidInf)%>%rename(N=NincidInf),
           period_breaks=config$report$formatting$display_dates,
           scenario_labels=config$report$formatting$scenario_labels,
           scenario_colors=config$report$formatting$scenario_colors,
@@ -343,8 +341,9 @@ ggpubr::ggarrange(plotlist=list(peak_vent), nrow=1, legend="bottom",
 
 ## Scenario Summaries
 
-[IF AVAILABLE, LOAD BED DATA AS IN THE EXAMPLE THAT FOLLOWS]
 ```{r load_special_data}
+
+## WE DON'T HAVE BED DATA... HOW TO GET BED DATA??
 
 ## source("R/load_beds_by_county_[STATE].R") ## R/load_beds_by_county_early_march.R
 ## bedtype <- "staffed ICU"
@@ -561,6 +560,134 @@ fig_counter <- fig_counter+1
   cat("  \n")
   tab_counter <- tab_counter + 1
 
+```
+
+### Boxplots for County Level Results
+
+```{r, BOXPLOTSCOUNTY}
+
+##Boxplot of peak hospital occupancy
+hosp_fig <- boxplot_by_timeperiod(tmp_hosp_totals %>% 
+                                    select(time, sim_num, scenario_name,
+                                           NhospCurr)%>%rename(N=NhospCurr),
+          scenario_labels=config$report$formatting$scenario_labels,
+          scenario_colors=config$report$formatting$scenario_colors,                        
+          period_breaks=config$report$formatting$display_dates,
+                            stat="peak")+
+  scale_y_sqrt()+
+  theme(legend.position = "none", 
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.title = element_blank())+
+  ylab("Peak Hospital Occupancy")
+
+
+##Boxplot of peak ICU occupancy
+icu_fig <- boxplot_by_timeperiod(tmp_hosp_totals %>% 
+                                    select(time, sim_num, scenario_name,
+                                           NICUCurr)%>%rename(N=NICUCurr),
+          period_breaks=config$report$formatting$display_dates,
+          scenario_labels=config$report$formatting$scenario_labels,
+          scenario_colors=config$report$formatting$scenario_colors,
+                            stat="peak")+scale_y_sqrt()+
+  theme(legend.position = "none", 
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.title = element_blank())+
+  ylab("Peak ICU Occupancy") 
+
+##Boxplot of deaths in period
+deaths_period <- boxplot_by_timeperiod(tmp_hosp_totals %>% 
+                                    select(time, sim_num, scenario_name,
+                                           NincidDeath)%>%rename(N=NincidDeath),
+          period_breaks=config$report$formatting$display_dates,
+          scenario_labels=config$report$formatting$scenario_labels,
+          scenario_colors=config$report$formatting$scenario_colors,
+                            stat="peak")+scale_y_sqrt()+
+  theme(legend.position = "none", 
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.title = element_blank())+
+  ylab("Deaths in Period") 
+
+##Boxplot of infections in period
+infections_period <- boxplot_by_timeperiod(tmp_hosp_totals %>% 
+                                    select(time, sim_num, scenario_name,
+                                           NincidInf)%>%rename(N=NincidInf),
+          period_breaks=config$report$formatting$display_dates,
+          scenario_labels=config$report$formatting$scenario_labels,
+          scenario_colors=config$report$formatting$scenario_colors,
+                            stat="peak")+scale_y_sqrt()+
+  theme(legend.position = "none", 
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.title = element_blank())+
+  ylab("Infections in Period") 
+
+##Boxplot of ICU admissions in period
+icu_period <- boxplot_by_timeperiod(tmp_hosp_totals %>% 
+                                    select(time, sim_num, scenario_name,
+                                           NincidICU)%>%rename(N=NincidICU),
+          period_breaks=config$report$formatting$display_dates,
+          scenario_labels=config$report$formatting$scenario_labels,
+          scenario_colors=config$report$formatting$scenario_colors,
+                            stat="peak")+scale_y_sqrt()+
+  theme(legend.position = "none", 
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.title = element_blank())+
+  ylab("ICU Admissions in Period") 
+
+##Boxplot of hospital admissions in period
+hosp_period <- boxplot_by_timeperiod(tmp_hosp_totals %>% 
+                                    select(time, sim_num, scenario_name,
+                                           NincidHosp)%>%rename(N=NincidHosp),
+          period_breaks=config$report$formatting$display_dates,
+          scenario_labels=config$report$formatting$scenario_labels,
+          scenario_colors=config$report$formatting$scenario_colors,
+                            stat="peak")+scale_y_sqrt()+
+  theme(legend.position = "none", 
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.title = element_blank())+
+  ylab("Hospital Admissions in Period") 
+
+##Boxplot of incident ventilations in period
+vent_period <- boxplot_by_timeperiod(tmp_hosp_totals %>% 
+                                    select(time, sim_num, scenario_name,
+                                           NincidVent)%>%rename(N=NincidVent),
+          period_breaks=config$report$formatting$display_dates,
+          scenario_labels=config$report$formatting$scenario_labels,
+          scenario_colors=config$report$formatting$scenario_colors,
+                            stat="peak")+scale_y_sqrt()+
+  theme(legend.position = "none", 
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.title = element_blank())+
+  ylab("Incident Ventilations in Period") 
+
+##Boxplot of peak ventilator usage in period
+peak_vent <- boxplot_by_timeperiod(tmp_hosp_totals %>% 
+                                    select(time, sim_num, scenario_name,
+                                           NVentCurr)%>%rename(N=NVentCurr),
+          period_breaks=config$report$formatting$display_dates,
+          scenario_labels=config$report$formatting$scenario_labels,
+          scenario_colors=config$report$formatting$scenario_colors,
+                            stat="peak")+scale_y_sqrt()+
+  theme(legend.position = "none", 
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.title = element_blank())+
+  ylab("Peak Ventilator in Use in Period") 
+
+ggpubr::ggarrange(plotlist=list(hosp_fig), nrow=1, legend="bottom",
+           common.legend = FALSE)   
+ggpubr::ggarrange(plotlist=list(icu_fig), nrow=1, legend="bottom",
+           common.legend = FALSE)
+ggpubr::ggarrange(plotlist=list(deaths_period), nrow=1, legend="bottom",
+           common.legend = FALSE)   
+ggpubr::ggarrange(plotlist=list(infections_period), nrow=1, legend="bottom",
+           common.legend = FALSE)   
+ggpubr::ggarrange(plotlist=list(icu_period), nrow=1, legend="bottom",
+           common.legend = FALSE)
+ggpubr::ggarrange(plotlist=list(hosp_period), nrow=1, legend="bottom",
+           common.legend = FALSE) 
+ggpubr::ggarrange(plotlist=list(vent_period), nrow=1, legend="bottom",
+           common.legend = FALSE) 
+ggpubr::ggarrange(plotlist=list(peak_vent), nrow=1, legend="bottom",
+           common.legend = FALSE)                                
 ```
 
 ```{r plot_threshold1, fig.cap = cap, fig.height = 7}
