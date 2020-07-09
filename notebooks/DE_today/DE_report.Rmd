@@ -129,18 +129,18 @@ doParallel::stopImplicitCluster()
 registerDoSEQ()
 ```
 
-```{r summary_fig, fig.cap = cap}
+```{r hosp_summary_fig, fig.cap = cap}
 plot_ts_hosp_state_sample(state_hosp_totals,
                           varname = "NhospCurr",
                           varlabel = "Daily hospital occupancy",
-                          num_sims = 1,
+                          num_sims = 25,
                           scenario_labels = config$report$formatting$scenario_labels,
                           scenario_cols = config$report$formatting$scenario_colors,
                           sim_start_date = config$start_date,
                           sim_end_date = config$end_date,
                           pdeath_level = 0.01)
 
-cap <- paste0("**Fig. ", fig_counter, "**: Daily state-level hospital occupancy for 1 simulation realizations for ", scen_desc_str, "at 1 % IFR assumptions.")
+cap <- paste0("**Fig. ", fig_counter, "**: Daily state-level hospital occupancy for 25 simulation realizations for ", scen_desc_str, "at 1 % IFR assumptions.")
 fig_counter <- fig_counter + 1
 ```
 
@@ -344,7 +344,6 @@ ggpubr::ggarrange(plotlist=list(peak_vent), nrow=1, legend="bottom",
 ```{r load_special_data}
 
 ## WE DON'T HAVE BED DATA... HOW TO GET BED DATA??
-
 ## source("R/load_beds_by_county_[STATE].R") ## R/load_beds_by_county_early_march.R
 ## bedtype <- "staffed ICU"
 ## vname <- "n_icu_bed_staffed"
